@@ -1,5 +1,6 @@
 import os
 
+import self
 from dotenv import load_dotenv
 from langgraph.graph import MessagesState, StateGraph, END
 from langgraph.prebuilt import tools_condition
@@ -79,7 +80,7 @@ def generate(state: MessagesState):
     return {"messages": [response]}
 
 
-def get_graph():
+def create_workflow():
     graph_builder.add_node(query_or_respond)
     graph_builder.add_node(tools)
     graph_builder.add_node(generate)
