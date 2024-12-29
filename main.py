@@ -99,6 +99,4 @@ def create_workflow():
     return graph
 
 
-
-
-
+graph = create_workflow()

@@ -1,19 +1,30 @@
-from langgraph.checkpoint.memory import MemorySaver
-from langgraph.graph import StateGraph, MessagesState
 import streamlit as st
+from langchain_core.messages import HumanMessage
+from streamlit_chat import message
+from main import graph
 
 # Specify an ID for the thread
-config = {"configurable": {"thread_id": "abc123"}}
-
-state = MessagesState()
+config = {"configurable": {"thread_id": "1"}}
 
 st.title("MBCET Chatbot")
-user_input = st.text_input("Ask me anything about the college:")
 
-if st.button("Submit"):
-    for step in graph.stream(
-            {"messages": [{"role": "user", "content": user_input}]},
-            stream_mode="values",
-            config=config
-    ):
-        st.write(step["AI_messages"][-1].pretty_print())
+if "messages" not in st.session_state:
+    st.session_state.messages = []
+
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+if prompt := st.chat_input("Ask me anything about the college"):
+    st.chat_message("user").markdown(prompt)
+
+    st.session_state.messages.append({"role": "user", "content": f"{prompt}"})
+
+    with st.chat_message("assistant"):
+        messages = [HumanMessage(content=f"{prompt}")]
+        response = graph.invoke(
+            {"messages": messages}
+            , config=config)
+        st.markdown(response['messages'][-1].content)
+
+    st.session_state.messages.append({"role": "assistant", "content": f"{response['messages'][-1].content}"})
