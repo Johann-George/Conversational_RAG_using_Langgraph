@@ -1,6 +1,5 @@
 import os
 
-import self
 from dotenv import load_dotenv
 from langgraph.graph import MessagesState, StateGraph, END
 from langgraph.prebuilt import tools_condition
@@ -23,11 +22,14 @@ vector_store = Chroma(embedding_function=embeddings, persist_directory=os.enviro
 @tool(response_format="content_and_artifact")
 def retrieve(query: str):
     """Retrieve information related to a query"""
+    print("query=",query)
     retrieved_docs = vector_store.similarity_search(query, k=2)
+    print("retrieved docs=", retrieved_docs)
     serialized = "\n\n".join(
         f"Source: {doc.metadata}\n" f"Content: {doc.page_content}"
         for doc in retrieved_docs
     )
+    print("serialized=", serialized)
     return serialized, retrieved_docs
 
 
@@ -36,6 +38,7 @@ def query_or_respond(state: MessagesState):
     """Generate tool call for retrieval or respond"""
     llm_with_tools = llm.bind_tools([retrieve])
     response = llm_with_tools.invoke(state["messages"])
+    print("response=", response)
     # MessagesState appends messages to state instead of overwriting
     return {"messages": [response]}
 
@@ -80,23 +83,18 @@ def generate(state: MessagesState):
     return {"messages": [response]}
 
 
-def create_workflow():
-    graph_builder.add_node(query_or_respond)
-    graph_builder.add_node(tools)
-    graph_builder.add_node(generate)
+graph_builder.add_node(query_or_respond)
+graph_builder.add_node(tools)
+graph_builder.add_node(generate)
 
-    graph_builder.set_entry_point("query_or_respond")
-    graph_builder.add_conditional_edges(
-        "query_or_respond",
-        tools_condition,
-        {END: END, "tools": "tools"},
-    )
-    graph_builder.add_edge("tools", "generate")
-    graph_builder.add_edge("generate", END)
+graph_builder.set_entry_point("query_or_respond")
+graph_builder.add_conditional_edges(
+    "query_or_respond",
+    tools_condition,
+    {END: END, "tools": "tools"},
+)
+graph_builder.add_edge("tools", "generate")
+graph_builder.add_edge("generate", END)
 
-    memory = MemorySaver()
-    graph = graph_builder.compile(checkpointer=memory)
-    return graph
-
-
-graph = create_workflow()
+memory = MemorySaver()
+graph = graph_builder.compile(checkpointer=memory)
