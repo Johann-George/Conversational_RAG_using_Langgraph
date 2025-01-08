@@ -5,16 +5,13 @@ from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import TextLoader, JSONLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_experimental.text_splitter import SemanticChunker
 
 load_dotenv()
 
 
 def metadata_func(record: dict, metadata: dict):
-    # metadata["title"] = record.get("metadata").get("title")
-    # metadata["source"] = record.get("metadata").get("sourceURL")
     metadata_dict = record.get("metadata")
-    print(metadata_dict)
+    # print(metadata_dict)
     if not isinstance(metadata_dict, dict):
         metadata_dict = {}
 
@@ -26,19 +23,21 @@ def metadata_func(record: dict, metadata: dict):
     return metadata
 
 
-llm = ChatOllama(model="llama3.2:3b")
-embeddings = OllamaEmbeddings(model="llama3.2:3b")
+llm = ChatOllama(model="llama3.1:8b")
+embeddings = OllamaEmbeddings(model="llama3.1:8b")
 vector_store = Chroma(embedding_function=embeddings, persist_directory=os.environ['CHROMA_PATH'])
 
 # loader = TextLoader("./mbcet_website_data.txt")
 loader = JSONLoader(
-    file_path='./results.json',
+    file_path='./sample.json',
     jq_schema='.[]',
-    content_key="content",
+    content_key=".content",
+    is_content_key_jq_parsable=True,
     metadata_func=metadata_func
 )
+print("loader=", loader)
 docs = loader.load()
-print("docs=", docs)
+# print("docs=", docs)
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1500,
     chunk_overlap=200,

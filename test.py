@@ -4,7 +4,7 @@ from streamlit_chat import message
 from main import graph
 
 # Specify an ID for the thread
-config = {"configurable": {"thread_id": "1"}}
+config = {"configurable": {"thread_id": "4"}}
 
 st.title("MBCET Chatbot")
 
@@ -23,8 +23,11 @@ if prompt := st.chat_input("Ask me anything about the college"):
     with st.chat_message("assistant"):
         messages = [HumanMessage(content=f"{prompt}")]
         response = graph.invoke(
-            {"messages": messages}
-            , config=config)
+                {"messages": messages},
+                stream_mode="values",
+                config=config
+        )
+        st.markdown(response)
         st.markdown(response['messages'][-1].content)
 
     st.session_state.messages.append({"role": "assistant", "content": f"{response['messages'][-1].content}"})

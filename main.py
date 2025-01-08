@@ -14,15 +14,15 @@ load_dotenv()
 
 graph_builder = StateGraph(MessagesState)
 
-llm = ChatOllama(model="llama3.2:3b")
-embeddings = OllamaEmbeddings(model="llama3.2:3b")
+llm = ChatOllama(model="llama3.1:8b")
+embeddings = OllamaEmbeddings(model="llama3.1:8b")
 vector_store = Chroma(embedding_function=embeddings, persist_directory=os.environ['CHROMA_PATH'])
 
 
 @tool(response_format="content_and_artifact")
 def retrieve(query: str):
     """Retrieve information related to a query"""
-    print("query=",query)
+    print("query=", query)
     retrieved_docs = vector_store.similarity_search(query, k=2)
     print("retrieved docs=", retrieved_docs)
     serialized = "\n\n".join(
