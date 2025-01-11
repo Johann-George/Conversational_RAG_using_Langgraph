@@ -74,7 +74,7 @@ def generate(state: MessagesState):
         message
         for message in state["messages"]
         if message.type in ("human", "system")
-           or (message.type == "ai" and not message.tool_calls)
+        or (message.type == "ai" and not message.tool_calls)
     ]
     prompt = [SystemMessage(system_message_content)] + conversation_messages
 

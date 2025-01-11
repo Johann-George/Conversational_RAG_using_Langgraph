@@ -31,8 +31,7 @@ vector_store = Chroma(embedding_function=embeddings, persist_directory=os.enviro
 loader = JSONLoader(
     file_path='./sample.json',
     jq_schema='.[]',
-    content_key=".content",
-    is_content_key_jq_parsable=True,
+    content_key="markdown",
     metadata_func=metadata_func
 )
 print("loader=", loader)
