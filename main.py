@@ -1,6 +1,10 @@
 import os
+import faiss
 
+from langchain_community.docstore.in_memory import InMemoryDocstore
+from langchain_community.vectorstores import FAISS
 from dotenv import load_dotenv
+from langchain_pinecone import PineconeVectorStore
 from langgraph.graph import MessagesState, StateGraph, END
 from langgraph.prebuilt import tools_condition
 from langchain_core.tools import tool
@@ -15,15 +19,25 @@ load_dotenv()
 graph_builder = StateGraph(MessagesState)
 
 llm = ChatOllama(model="llama3.1:8b")
-embeddings = OllamaEmbeddings(model="llama3.1:8b")
+embeddings = OllamaEmbeddings(model="chroma/all-minilm-l6-v2-f32")
 vector_store = Chroma(embedding_function=embeddings, persist_directory=os.environ['CHROMA_PATH'])
+# vector_store = PineconeVectorStore(
+#     index_name=os.environ['INDEX_NAME'], embedding=embeddings
+# )
 
+# new_vector_store = FAISS.load_local(
+#     "faiss_index",
+#     embeddings=embeddings,
+#     allow_dangerous_deserialization=True,
+# )
 
 @tool(response_format="content_and_artifact")
 def retrieve(query: str):
     """Retrieve information related to a query"""
     print("query=", query)
-    retrieved_docs = vector_store.similarity_search(query, k=2)
+    retrieved_docs = vector_store.similarity_search(query,
+                                                        k=2,
+                                                        filter={"title":"Departments"})
     print("retrieved docs=", retrieved_docs)
     serialized = "\n\n".join(
         f"Source: {doc.metadata}\n" f"Content: {doc.page_content}"

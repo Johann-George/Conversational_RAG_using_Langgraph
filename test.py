@@ -1,10 +1,9 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage
-from streamlit_chat import message
 from main import graph
 
 # Specify an ID for the thread
-config = {"configurable": {"thread_id": "5"}}
+config = {"configurable": {"thread_id": "7"}}
 
 st.title("MBCET Chatbot")
 
